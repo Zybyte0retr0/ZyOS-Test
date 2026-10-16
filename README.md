@@ -23,7 +23,7 @@ Ainda não é uma distribuição Linux completa e não substitui um sistema oper
 - Painel informativo sobre o BlackArch.
 - Elementos visuais em preto, laranja e detalhes prateados.
 - Projeto em desenvolvimento; funcionalidades podem mudar.
-- 
+  
 🔐 Uso responsável
 O ZyOS é pensado para aprendizado, personalização e exploração responsável de tecnologia. Qualquer ferramenta de segurança que venha a ser integrada deverá ser utilizada somente em sistemas próprios ou em ambientes para os quais você tenha autorização explícita.
 👤 Autor
