@@ -1,7 +1,7 @@
-ZyOS Black Edition
+ZyOS 
 Um projeto independente inspirado no BlackArch Linux, criado por Zybyte_retr0.
 
-O ZyOS Black Edition é um projeto experimental que busca trazer uma experiência mais simples, visualmente marcante e acessível para quem gosta do universo Linux, cibersegurança e ferramentas de análise. A proposta é tornar a navegação e a organização das informações mais fáceis, com uma interface direta, rápida de entender e personalizável.
+O ZyOS é um projeto experimental que busca trazer uma experiência mais simples, visualmente marcante e acessível para quem gosta do universo Linux, cibersegurança e ferramentas de análise. A proposta é tornar a navegação e a organização das informações mais fáceis, com uma interface direta, rápida de entender e personalizável.
 A ideia é reunir uma experiência de uso mais intuitiva, com foco em praticidade e agilidade — sem perder a estética hacker inspirada em terminais, painéis de monitoramento e no visual preto e laranja.
 
 ✨ Objetivos do projeto
@@ -36,4 +36,4 @@ Zybyte_retr0
 
 📄 Licença
 Nenhuma licença específica foi definida neste momento. 
-ZyOS Black Edition — uma experiência inspirada no BlackArch, com foco em simplicidade, organização e agilidade.
+ZyOS — uma experiência inspirada no BlackArch, com foco em simplicidade, organização e agilidade.
