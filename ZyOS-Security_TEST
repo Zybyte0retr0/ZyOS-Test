@@ -47,6 +47,11 @@
         /* WINDOWS */
         .win { display: none; position: absolute; z-index: 10; min-width: 300px; min-height: 200px; background: linear-gradient(145deg, #101116fa, #090a0efc); border: 1px solid #777e887a; box-shadow: 0 0 0 1px #ff6a001f, 0 24px 70px #000d; border-radius: 3px; overflow: hidden; resize: both; }
         .win.open { display: flex; flex-direction: column; }
+        .win.minimized { display: none !important; }
+        .win.maximized { border-radius: 0; }
+        .titlebar { flex: 0 0 39px; user-select: none; touch-action: pan-y; }
+        .titlebar button { flex: 0 0 24px; position: relative; z-index: 2; }
+        .winbtn:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
         .win.maximized { left: 8px !important; top: 42px !important; width: calc(100vw - 16px) !important; height: calc(100dvh - 98px) !important; resize: none !important; }
         .titlebar { height: 39px; display: flex; align-items: center; gap: 9px; padding: 0 11px; background: linear-gradient(90deg, #ff6a0025, #17191f 48%, #0b0c10); border-bottom: 1px solid #ff6a0080; cursor: grab; color: var(--orange2); font: 700 11px Orbitron; }
         .titlebar .spacer { flex: 1; }
@@ -86,6 +91,25 @@
         .cyber-card { background: #0a0b0f; border: 1px solid #30333b; padding: 15px; border-radius: 4px; }
         .cyber-card h4 { color: var(--orange); margin: 0 0 10px 0; font-family: Orbitron; font-size: 12px; }
         .cyber-card code { display: block; background: #000; color: var(--green); padding: 5px; font-size: 11px; margin: 5px 0; border-left: 2px solid var(--green); }
+        /* STUDY CENTER */
+        .study-layout { display:grid; grid-template-columns:minmax(220px, .85fr) minmax(260px, 1.4fr); gap:14px; }
+        .study-form { display:grid; gap:8px; }
+        .study-form label { color:var(--orange2); font-size:11px; }
+        .study-form input, .study-form textarea, .study-form select, .study-search { width:100%; background:#050608; color:#e6e8ed; border:1px solid #424650; padding:9px; font:inherit; outline:none; }
+        .study-form input:focus, .study-form textarea:focus, .study-form select:focus, .study-search:focus { border-color:var(--orange); }
+        .study-form textarea { min-height:90px; resize:vertical; }
+        .study-stats { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
+        .study-stat { flex:1; min-width:90px; padding:10px; background:#08090c; border:1px solid #30333b; }
+        .study-stat strong { display:block; color:var(--orange); font:700 19px Orbitron; }
+        .study-item { border:1px solid #343842; background:#0a0b0f; padding:12px; margin:9px 0; }
+        .study-item.done { border-left:3px solid var(--green); }
+        .study-item h4 { margin:0 0 6px; color:#f0f1f4; font:700 12px Orbitron; overflow-wrap:anywhere; }
+        .study-item p { white-space:pre-wrap; overflow-wrap:anywhere; }
+        .study-item .meta { color:var(--muted); font-size:10px; margin-bottom:7px; }
+        .study-actions { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+        .study-actions button { font:inherit; }
+        .study-empty { border:1px dashed #424650; padding:18px; color:var(--muted); text-align:center; }
+        @media(max-width:700px){ .study-layout { grid-template-columns:1fr; } }
 
         @media(max-width:650px){
             .shortcuts { left: 18px; grid-template-columns: repeat(2, 75px); }
@@ -117,12 +141,13 @@
         <div class="shortcut" onclick="openWin('library')"><div class="ico">◈</div><small>LIBRARY</small></div>
         <div class="shortcut" onclick="openWin('monitor')"><div class="ico">▥</div><small>SYSTEM</small></div>
         <div class="shortcut" onclick="openWin('notes')"><div class="ico">✎</div><small>NOTAS</small></div>
+        <div class="shortcut" onclick="openWin('study')"><div class="ico">▤</div><small>ESTUDOS</small></div>
         <div class="shortcut" onclick="openWin('about')"><div class="ico">Z</div><small>SOBRE</small></div>
     </div>
 
     <!-- TERMINAL -->
     <div class="win open" id="win-terminal" style="left:20%;top:15%;width:600px;height:380px">
-        <div class="titlebar" data-drag>ZY-TERMINAL <span class="pill">ROOT@SESSÃO</span><div class="spacer"></div><button class="winbtn" onclick="minimizeWin('terminal')">−</button><button class="winbtn" onclick="maximizeWin('terminal')">□</button><button class="winbtn" onclick="closeWin('terminal')">×</button></div>
+        <div class="titlebar" data-drag>ZY-TERMINAL <span class="pill">ROOT@SESSÃO</span><div class="spacer"></div><button class="winbtn" type="button" title="Minimizar" onclick="minimizeWin('terminal')">−</button><button class="winbtn" type="button" title="Maximizar / restaurar" onclick="maximizeWin('terminal')">□</button><button class="winbtn" type="button" title="Fechar" onclick="closeWin('terminal')">×</button></div>
         <div class="body" style="background:#07080b;display:flex;flex-direction:column" id="term-body">
             <div id="termout">ZyOS Intelligence Terminal v3.0
 Acesso autorizado. Digite 'help' para ver a base de comandos de cybersecurity.
@@ -133,7 +158,7 @@ Acesso autorizado. Digite 'help' para ver a base de comandos de cybersecurity.
 
     <!-- SECURITY TOOLKIT -->
     <div class="win" id="win-tools" style="left:25%;top:10%;width:700px;height:500px">
-        <div class="titlebar" data-drag>SECURITY TOOLKIT <div class="spacer"></div><button class="winbtn" onclick="minimizeWin('tools')">−</button><button class="winbtn" onclick="maximizeWin('tools')">□</button><button class="winbtn" onclick="closeWin('tools')">×</button></div>
+        <div class="titlebar" data-drag>SECURITY TOOLKIT <div class="spacer"></div><button class="winbtn" type="button" title="Minimizar" onclick="minimizeWin('tools')">−</button><button class="winbtn" type="button" title="Maximizar / restaurar" onclick="maximizeWin('tools')">□</button><button class="winbtn" type="button" title="Fechar" onclick="closeWin('tools')">×</button></div>
         <div class="body">
             <h3>CATÁLOGO DE OPERAÇÕES</h3>
             <div class="cyber-grid">
@@ -179,7 +204,7 @@ Acesso autorizado. Digite 'help' para ver a base de comandos de cybersecurity.
 
     <!-- CYBER LIBRARY -->
     <div class="win" id="win-library" style="left:20%;top:10%;width:800px;height:550px">
-        <div class="titlebar" data-drag>CYBER-LIBRARY // DOSSIÊ <div class="spacer"></div><button class="winbtn" onclick="minimizeWin('library')">−</button><button class="winbtn" onclick="maximizeWin('library')">□</button><button class="winbtn" onclick="closeWin('library')">×</button></div>
+        <div class="titlebar" data-drag>CYBER-LIBRARY // DOSSIÊ <div class="spacer"></div><button class="winbtn" type="button" title="Minimizar" onclick="minimizeWin('library')">−</button><button class="winbtn" type="button" title="Maximizar / restaurar" onclick="maximizeWin('library')">□</button><button class="winbtn" type="button" title="Fechar" onclick="closeWin('library')">×</button></div>
         <div class="body">
             <h3>ENCICLOPÉDIA DE SEGURANÇA</h3>
             <div class="cyber-grid">
@@ -223,17 +248,60 @@ Acesso autorizado. Digite 'help' para ver a base de comandos de cybersecurity.
         </div>
     </div>
 
+    <!-- STUDY CENTER -->
+    <div class="win" id="win-study" style="left:13%;top:7%;width:950px;height:640px">
+        <div class="titlebar" data-drag>ZY-STUDY // CENTRAL DE ESTUDOS <span class="pill">LOCAL WORKSPACE</span><div class="spacer"></div><button class="winbtn" type="button" title="Minimizar" onclick="minimizeWin('study')">−</button><button class="winbtn" type="button" title="Maximizar / restaurar" onclick="maximizeWin('study')">□</button><button class="winbtn" type="button" title="Fechar" onclick="closeWin('study')">×</button></div>
+        <div class="body">
+            <h3>ACADEMIA ZYOS / PAINEL DE APRENDIZAGEM</h3>
+            <p>Organize suas matérias, trilhas de aprendizagem e conteúdos. Os dados ficam salvos neste navegador.</p>
+            <div class="study-stats">
+                <div class="study-stat"><strong id="study-total">0</strong><span>ITENS</span></div>
+                <div class="study-stat"><strong id="study-done">0</strong><span>CONCLUÍDOS</span></div>
+                <div class="study-stat"><strong id="study-progress">0%</strong><span>PROGRESSO</span></div>
+            </div>
+            <div class="study-layout">
+                <section class="section">
+                    <h3 id="study-form-title">ADICIONAR CONTEÚDO</h3>
+                    <form id="study-form" class="study-form">
+                        <label for="study-type">TIPO</label>
+                        <select id="study-type"><option value="Matéria">Matéria</option><option value="Trilha">Trilha de aprendizagem</option><option value="Conteúdo">Conteúdo / aula</option></select>
+                        <label for="study-title">NOME</label>
+                        <input id="study-title" required maxlength="120" placeholder="Ex.: Fundamentos de redes">
+                        <label for="study-subject">MATÉRIA / TRILHA RELACIONADA (opcional)</label>
+                        <input id="study-subject" maxlength="120" placeholder="Ex.: Cibersegurança">
+                        <label for="study-description">ANOTAÇÕES / OBJETIVOS / LINKS</label>
+                        <textarea id="study-description" maxlength="5000" placeholder="Tópicos, objetivos, links de estudo..."></textarea>
+                        <button class="action" type="submit" id="study-submit">＋ ADICIONAR À MINHA TRILHA</button>
+                        <button class="action" type="button" id="study-cancel" hidden onclick="cancelStudyEdit()">CANCELAR EDIÇÃO</button>
+                    </form>
+                    <p class="meta">Dica: crie uma Matéria, depois trilhas e conteúdos ligados a ela.</p>
+                </section>
+                <section>
+                    <h3>MEU PLANO DE ESTUDOS</h3>
+                    <input class="study-search" id="study-search" placeholder="Buscar matéria, trilha ou conteúdo...">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:9px 0">
+                        <select id="study-filter" class="study-search" style="flex:1;min-width:130px"><option value="Todos">Todos os tipos</option><option>Matéria</option><option>Trilha</option><option>Conteúdo</option></select>
+                        <select id="study-status" class="study-search" style="flex:1;min-width:130px"><option value="Todos">Qualquer status</option><option value="Pendente">Pendentes</option><option value="Concluído">Concluídos</option></select>
+                    </div>
+                    <div id="study-list"><div class="study-empty">Nenhum item ainda. Use o formulário para criar seu primeiro plano.</div></div>
+                    <div class="study-actions"><button class="action" type="button" onclick="exportStudyData()">EXPORTAR JSON</button><button class="action" type="button" onclick="document.getElementById('study-import').click()">IMPORTAR JSON</button><input id="study-import" type="file" accept=".json,application/json" hidden></div>
+                    <p class="meta">Exportar cria uma cópia de segurança. Importar substitui a lista atual.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+
     <!-- OTHER WINDOWS (Simplified for space) -->
     <div class="win" id="win-monitor" style="left:30%;top:20%;width:400px;height:300px">
-        <div class="titlebar" data-drag>SYSTEM MONITOR<div class="spacer"></div><button class="winbtn" onclick="closeWin('monitor')">×</button></div>
+        <div class="titlebar" data-drag>SYSTEM MONITOR<div class="spacer"></div><button class="winbtn" type="button" aria-label="Minimizar" title="Minimizar" onclick="minimizeWin('monitor')">−</button><button class="winbtn" type="button" aria-label="Maximizar ou restaurar" title="Maximizar / restaurar" onclick="maximizeWin('monitor')">□</button><button class="winbtn" type="button" aria-label="Fechar" title="Fechar" onclick="closeWin('monitor')">×</button></div>
         <div class="body"><h3>SESSÃO ATIVA</h3><div class="section">CPU: 14%<br>RAM: 2.1GB<br>STATUS: <span class="green">ENCRYPTED</span></div></div>
     </div>
     <div class="win" id="win-notes" style="left:25%;top:25%;width:500px;height:350px">
-        <div class="titlebar" data-drag>ZY-NOTES<div class="spacer"></div><button class="winbtn" onclick="closeWin('notes')">×</button></div>
+        <div class="titlebar" data-drag>ZY-NOTES<div class="spacer"></div><button class="winbtn" type="button" aria-label="Minimizar" title="Minimizar" onclick="minimizeWin('notes')">−</button><button class="winbtn" type="button" aria-label="Maximizar ou restaurar" title="Maximizar / restaurar" onclick="maximizeWin('notes')">□</button><button class="winbtn" type="button" aria-label="Fechar" title="Fechar" onclick="closeWin('notes')">×</button></div>
         <div class="body"><textarea id="notes" style="width:100%; height:200px; background:#000; color:#fff; border:1px solid #333; padding:10px; outline:none; font:inherit; resize:none;" placeholder="// Anote seus payloads aqui..."></textarea><br><button class="action" onclick="saveNotes()">SALVAR</button></div>
     </div>
     <div class="win" id="win-about" style="left:30%;top:15%;width:400px;height:300px">
-        <div class="titlebar" data-drag>ABOUT ZYOS<div class="spacer"></div><button class="winbtn" onclick="closeWin('about')">×</button></div>
+        <div class="titlebar" data-drag>ABOUT ZYOS<div class="spacer"></div><button class="winbtn" type="button" aria-label="Minimizar" title="Minimizar" onclick="minimizeWin('about')">−</button><button class="winbtn" type="button" aria-label="Maximizar ou restaurar" title="Maximizar / restaurar" onclick="maximizeWin('about')">□</button><button class="winbtn" type="button" aria-label="Fechar" title="Fechar" onclick="closeWin('about')">×</button></div>
         <div class="body"><h3>ZyOS Intelligence Edition</h3><p>Interface focada em documentação de Cybersecurity. Inspirada no BlackArch Linux.</p><p class="orange">By Zybyte_retr0</p></div>
     </div>
 
@@ -244,6 +312,7 @@ Acesso autorizado. Digite 'help' para ver a base de comandos de cybersecurity.
         <div class="menuitem" onclick="openWin('library');toggleMenu()">◈ Cyber Library</div>
         <div class="menuitem" onclick="openWin('monitor');toggleMenu()">▥ System Monitor</div>
         <div class="menuitem" onclick="openWin('notes');toggleMenu()">✎ Notas</div>
+        <div class="menuitem" onclick="openWin('study');toggleMenu()">▤ Central de Estudos</div>
         <div class="menuitem" onclick="location.reload()">⟲ Reiniciar</div>
     </div>
 
@@ -252,6 +321,7 @@ Acesso autorizado. Digite 'help' para ver a base de comandos de cybersecurity.
         <button class="taskapp" onclick="openWin('terminal')">TERMINAL</button>
         <button class="taskapp" onclick="openWin('tools')">TOOLKIT</button>
         <button class="taskapp" onclick="openWin('library')">LIBRARY</button>
+        <button class="taskapp" onclick="openWin('study')">ESTUDOS</button>
         <div id="taskclock" class="right"><span id="tbtime">--:--</span></div>
     </div>
 </div>
@@ -266,40 +336,75 @@ Acesso autorizado. Digite 'help' para ver a base de comandos de cybersecurity.
     }, 350);
     setTimeout(() => document.getElementById('boot').classList.add('off'), 2500);
 
-    // WINDOWS
+    // GERENCIADOR DE JANELAS: abrir, fechar, minimizar, maximizar e restaurar
     let zTop = 100;
+    const windowRects = new WeakMap();
+    function focusWin(w) { w.style.zIndex = ++zTop; }
     function openWin(id) {
         const w = document.getElementById('win-' + id);
         if (!w) return;
+        w.classList.remove('minimized');
         w.classList.add('open');
-        w.style.zIndex = ++zTop;
-        document.getElementById('menu').classList.remove('open');
+        focusWin(w);
+        document.getElementById('menu')?.classList.remove('open');
     }
-    function closeWin(id) { document.getElementById('win-' + id).classList.remove('open'); }
-    function minimizeWin(id) { document.getElementById('win-' + id).classList.add('minimized'); }
+    function closeWin(id) {
+        const w = document.getElementById('win-' + id);
+        if (!w) return;
+        w.classList.remove('open', 'minimized', 'maximized');
+        windowRects.delete(w);
+    }
+    function minimizeWin(id) {
+        const w = document.getElementById('win-' + id);
+        if (!w) return;
+        w.classList.remove('maximized');
+        w.classList.add('minimized');
+    }
     function maximizeWin(id) {
         const w = document.getElementById('win-' + id);
-        w.classList.toggle('maximized');
+        if (!w) return;
+        if (!w.classList.contains('maximized')) {
+            const r = w.getBoundingClientRect();
+            windowRects.set(w, { left: r.left, top: r.top, width: r.width, height: r.height });
+            w.classList.add('maximized');
+        } else {
+            w.classList.remove('maximized');
+            const r = windowRects.get(w);
+            if (r) {
+                w.style.left = Math.max(0, Math.min(r.left, window.innerWidth - 300)) + 'px';
+                w.style.top = Math.max(34, Math.min(r.top, window.innerHeight - 200)) + 'px';
+                w.style.width = Math.min(r.width, window.innerWidth) + 'px';
+                w.style.height = Math.min(r.height, window.innerHeight - 46) + 'px';
+            }
+        }
+        focusWin(w);
     }
-    function toggleMenu() { document.getElementById('menu').classList.toggle('open'); }
+    function toggleMenu() { document.getElementById('menu')?.classList.toggle('open'); }
 
-    // DRAG
+    // Arrastar janela sem capturar cliques nos botões da barra de título
     let dragState = null;
     document.querySelectorAll('[data-drag]').forEach(bar => {
         const win = bar.parentElement;
         bar.addEventListener('pointerdown', e => {
+            if (e.target.closest('button') || win.classList.contains('maximized') || e.button !== 0) return;
             const r = win.getBoundingClientRect();
-            dragState = { win, dx: e.clientX - r.left, dy: e.clientY - r.top };
-            win.style.zIndex = ++zTop;
-            bar.setPointerCapture(e.pointerId);
+            dragState = { win, dx: e.clientX - r.left, dy: e.clientY - r.top, pointerId: e.pointerId };
+            focusWin(win);
+            if (bar.setPointerCapture) bar.setPointerCapture(e.pointerId);
         });
         bar.addEventListener('pointermove', e => {
-            if (!dragState) return;
-            win.style.left = (e.clientX - dragState.dx) + 'px';
-            win.style.top = (e.clientY - dragState.dy) + 'px';
+            if (!dragState || dragState.win !== win || dragState.pointerId !== e.pointerId) return;
+            const maxLeft = Math.max(0, window.innerWidth - 120);
+            const maxTop = Math.max(34, window.innerHeight - 80);
+            win.style.left = Math.max(0, Math.min(e.clientX - dragState.dx, maxLeft)) + 'px';
+            win.style.top = Math.max(34, Math.min(e.clientY - dragState.dy, maxTop)) + 'px';
         });
-        bar.addEventListener('pointerup', () => dragState = null);
+        const stopDrag = e => { if (dragState && dragState.win === win && (!e || dragState.pointerId === e.pointerId)) dragState = null; };
+        bar.addEventListener('pointerup', stopDrag);
+        bar.addEventListener('pointercancel', stopDrag);
+        bar.addEventListener('lostpointercapture', stopDrag);
     });
+    document.querySelectorAll('.win').forEach(w => w.addEventListener('pointerdown', () => focusWin(w)));
 
     // TERMINAL INTELLIGENCE
     const termout = document.getElementById('termout');
@@ -354,6 +459,142 @@ Acesso autorizado. Digite 'help' para ver a base de comandos de cybersecurity.
     setInterval(tick, 1000); tick();
 
     function saveNotes() { alert('Notas salvas no buffer local.'); }
+
+    // ZY-STUDY: matérias, trilhas e conteúdos persistidos no navegador
+    const STUDY_STORAGE_KEY = 'zyos-study-items-v1';
+    let studyItems = [];
+    let editingStudyId = null;
+    try {
+        const savedStudy = JSON.parse(localStorage.getItem(STUDY_STORAGE_KEY) || '[]');
+        if (Array.isArray(savedStudy)) studyItems = savedStudy;
+    } catch (e) { console.warn('Não foi possível ler os dados de estudo salvos.', e); }
+
+    function persistStudy() {
+        try {
+            localStorage.setItem(STUDY_STORAGE_KEY, JSON.stringify(studyItems));
+            renderStudyItems();
+        } catch (e) {
+            alert('Não foi possível salvar os estudos no navegador. Exporte os dados e verifique o espaço disponível.');
+        }
+    }
+    function escapeStudyHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    }
+    function renderStudyItems() {
+        const query = document.getElementById('study-search').value.trim().toLowerCase();
+        const type = document.getElementById('study-filter').value;
+        const status = document.getElementById('study-status').value;
+        const filtered = studyItems.filter(item => {
+            const matchesText = [item.title, item.subject, item.description, item.type].join(' ').toLowerCase().includes(query);
+            return matchesText && (type === 'Todos' || item.type === type) &&
+                (status === 'Todos' || (status === 'Concluído' ? item.done : !item.done));
+        });
+        const total = studyItems.length, done = studyItems.filter(item => item.done).length;
+        document.getElementById('study-total').textContent = total;
+        document.getElementById('study-done').textContent = done;
+        document.getElementById('study-progress').textContent = (total ? Math.round(done / total * 100) : 0) + '%';
+        const list = document.getElementById('study-list');
+        if (!filtered.length) {
+            list.innerHTML = '<div class="study-empty">' + (studyItems.length ? 'Nenhum resultado para estes filtros.' : 'Nenhum item ainda. Use o formulário para criar seu primeiro plano.') + '</div>';
+            return;
+        }
+        const typeOrder = {'Matéria':0, 'Trilha':1, 'Conteúdo':2};
+        filtered.sort((a,b) => (typeOrder[a.type] ?? 3) - (typeOrder[b.type] ?? 3) || a.title.localeCompare(b.title, 'pt-BR'));
+        list.innerHTML = filtered.map(item => `
+            <article class="study-item ${item.done ? 'done' : ''}">
+                <div class="meta">${escapeStudyHtml(item.type.toUpperCase())} · ${item.done ? '<span style="color:var(--green)">CONCLUÍDO</span>' : 'PENDENTE'}</div>
+                <h4>${escapeStudyHtml(item.title)}</h4>
+                ${item.subject ? `<div class="meta">RELACIONADO A: ${escapeStudyHtml(item.subject)}</div>` : ''}
+                ${item.description ? `<p>${escapeStudyHtml(item.description)}</p>` : ''}
+                <div class="study-actions">
+                    <button class="action" type="button" onclick="toggleStudyDone('${item.id}')">${item.done ? '↶ REABRIR' : '✓ CONCLUIR'}</button>
+                    <button class="action" type="button" onclick="editStudyItem('${item.id}')">EDITAR</button>
+                    <button class="action" type="button" onclick="deleteStudyItem('${item.id}')">EXCLUIR</button>
+                </div>
+            </article>`).join('');
+    }
+    document.getElementById('study-form').addEventListener('submit', event => {
+        event.preventDefault();
+        const title = document.getElementById('study-title').value.trim();
+        if (!title) return;
+        const values = {
+            type: document.getElementById('study-type').value,
+            title,
+            subject: document.getElementById('study-subject').value.trim(),
+            description: document.getElementById('study-description').value.trim()
+        };
+        if (editingStudyId) {
+            const item = studyItems.find(entry => entry.id === editingStudyId);
+            if (item) Object.assign(item, values);
+        } else {
+            studyItems.push({ id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2)), ...values, done:false, createdAt:new Date().toISOString() });
+        }
+        document.getElementById('study-form').reset();
+        cancelStudyEdit();
+        persistStudy();
+    });
+    function toggleStudyDone(id) {
+        const item = studyItems.find(entry => entry.id === id);
+        if (item) { item.done = !item.done; persistStudy(); }
+    }
+    function editStudyItem(id) {
+        const item = studyItems.find(entry => entry.id === id);
+        if (!item) return;
+        editingStudyId = id;
+        document.getElementById('study-type').value = item.type;
+        document.getElementById('study-title').value = item.title;
+        document.getElementById('study-subject').value = item.subject || '';
+        document.getElementById('study-description').value = item.description || '';
+        document.getElementById('study-form-title').textContent = 'EDITAR ITEM DE ESTUDO';
+        document.getElementById('study-submit').textContent = 'SALVAR ALTERAÇÕES';
+        document.getElementById('study-cancel').hidden = false;
+        document.getElementById('study-title').focus();
+    }
+    function cancelStudyEdit() {
+        editingStudyId = null;
+        document.getElementById('study-form-title').textContent = 'ADICIONAR CONTEÚDO';
+        document.getElementById('study-submit').textContent = '＋ ADICIONAR À MINHA TRILHA';
+        document.getElementById('study-cancel').hidden = true;
+    }
+    function deleteStudyItem(id) {
+        const item = studyItems.find(entry => entry.id === id);
+        if (item && confirm('Excluir "' + item.title + '" dos estudos?')) {
+            studyItems = studyItems.filter(entry => entry.id !== id);
+            if (editingStudyId === id) { document.getElementById('study-form').reset(); cancelStudyEdit(); }
+            persistStudy();
+        }
+    }
+    function exportStudyData() {
+        const blob = new Blob([JSON.stringify(studyItems, null, 2)], {type:'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'zyos-estudos-backup.json'; a.click();
+        URL.revokeObjectURL(url);
+    }
+    document.getElementById('study-import').addEventListener('change', async event => {
+        const file = event.target.files[0];
+        if (!file) return;
+        try {
+            const parsed = JSON.parse(await file.text());
+            if (!Array.isArray(parsed) || parsed.some(item => !item || typeof item.title !== 'string' || !['Matéria','Trilha','Conteúdo'].includes(item.type))) {
+                throw new Error('Formato inválido');
+            }
+            if (confirm('Importar vai substituir todos os itens atuais. Deseja continuar?')) {
+                studyItems = parsed.map(item => ({
+                    id: String(item.id || (Date.now() + Math.random())),
+                    type: item.type, title: item.title, subject: String(item.subject || ''),
+                    description: String(item.description || ''), done: Boolean(item.done),
+                    createdAt: item.createdAt || new Date().toISOString()
+                }));
+                persistStudy();
+            }
+        } catch (error) { alert('Arquivo JSON inválido ou incompatível. Nenhum dado foi importado.'); }
+        event.target.value = '';
+    });
+    ['study-search','study-filter','study-status'].forEach(id =>
+        document.getElementById(id).addEventListener(id === 'study-search' ? 'input' : 'change', renderStudyItems)
+    );
+    renderStudyItems();
 </script>
 </body>
 </html>
