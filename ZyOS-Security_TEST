@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZyOS — Cyber Intelligence Edition</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@500;700;900&display=swap');
+        :root {
+            --orange: #ff6a00; --orange2: #ff9b45; --bg: #050608; --panel: #0d0e13; 
+            --panel2: #15171e; --line: #30333c; --silver: #aeb4be; --muted: #777e8b; 
+            --green: #65ff9a; --red: #ff555d; --blue: #65c8ff;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--bg); color: var(--silver); font: 13px 'Share Tech Mono', monospace; overflow: hidden; height: 100vh; }
+        
+        /* BOOT */
+        #boot { position: fixed; inset: 0; z-index: 1000; background: radial-gradient(ellipse at 50% 42%, #19110b, #050507 65%); display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity .7s; }
+        #boot.off { opacity: 0; pointer-events: none; }
+        .logo { font: 900 clamp(42px, 8vw, 82px) Orbitron, sans-serif; letter-spacing: 10px; color: var(--orange); text-shadow: 0 0 30px #ff6a0066; }
+        .logo span { color: #ddd; }
+        .boot-sub { color: var(--muted); letter-spacing: 4px; margin-top: 12px; font-size: 10px; }
+        .boot-bar { width: min(340px, 75vw); height: 5px; background: #24252b; margin: 28px 0 16px; overflow: hidden; border: 1px solid #343841; }
+        .boot-bar:after { content: ""; display: block; height: 100%; background: var(--orange); animation: load 2.4s ease forwards; box-shadow: 0 0 16px var(--orange); }
+        @keyframes load { to { width: 100%; } }
+        #bootlog { font-size: 11px; line-height: 1.8; color: #9aa1ac; text-align: left; min-height: 78px; width: min(360px, 80vw); }
+
+        /* DESKTOP */
+        #desktop { position: fixed; inset: 0 0 46px; background: radial-gradient(ellipse at 51% 46%, #ff6a0015 0%, transparent 44%), linear-gradient(135deg, #08090c 0%, #0b0c10 45%, #050608 100%); animation: flicker 8s infinite; }
+        #desktop:before { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(#ff6a0009 1px, transparent 1px), linear-gradient(90deg, #ff6a0009 1px, transparent 1px); background-size: 32px 32px; }
+        @keyframes flicker { 0%, 96%, 100% { opacity: 1; } 97% { opacity: .86; } 98% { opacity: .96; } }
+        .watermark { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); font: 900 clamp(70px, 13vw, 150px) Orbitron; color: #ff6a0007; letter-spacing: 15px; pointer-events: none; }
+
+        /* UI ELEMENTS */
+        .topbar { position: absolute; z-index: 100; top: 0; left: 0; right: 0; height: 34px; display: flex; align-items: center; gap: 18px; padding: 0 16px; background: linear-gradient(90deg, #090a0df5, #15171bf0, #090a0df5); border-bottom: 1px solid #ff6a0070; color: #8e949f; }
+        .topbar strong { color: var(--orange); font-family: Orbitron; letter-spacing: 2px; }
+        .topbar .right { margin-left: auto; }
+        .author-seal { display: inline-flex; align-items: center; gap: 7px; border: 1px solid #8f969f; background: linear-gradient(135deg, #24272d, #0b0c10); padding: 4px 8px; color: #e3e6eb; font: 700 9px Orbitron; clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px)); }
+        .seal-dot { width: 7px; height: 7px; background: var(--orange); border-radius: 50%; box-shadow: 0 0 10px var(--orange); }
+
+        .shortcuts { position: absolute; z-index: 3; top: 67px; left: 42px; display: grid; gap: 9px; }
+        .shortcut { width: 82px; min-height: 76px; text-align: center; padding: 8px 4px; border: 1px solid #ffffff08; cursor: pointer; color: #c6cad2; background: linear-gradient(135deg, #14161b77, #090a0d22); transition: 0.2s; }
+        .shortcut:hover { background: #ff6a0019; border-color: #ff6a0077; box-shadow: 0 0 18px #ff6a0010; }
+        .shortcut .ico { width: 40px; height: 40px; margin: 0 auto 7px; border: 1px solid #aeb4be; display: grid; place-items: center; font-size: 18px; color: var(--orange); background: linear-gradient(145deg, #1d2026, #090a0c); clip-path: polygon(0 0, 100% 0, 100% 78%, 78% 100%, 0 100%); }
+        .shortcut small { font-size: 10px; display: block; }
+
+        /* WINDOWS */
+        .win { display: none; position: absolute; z-index: 10; min-width: 300px; min-height: 200px; background: linear-gradient(145deg, #101116fa, #090a0efc); border: 1px solid #777e887a; box-shadow: 0 0 0 1px #ff6a001f, 0 24px 70px #000d; border-radius: 3px; overflow: hidden; resize: both; }
+        .win.open { display: flex; flex-direction: column; }
+        .win.maximized { left: 8px !important; top: 42px !important; width: calc(100vw - 16px) !important; height: calc(100dvh - 98px) !important; resize: none !important; }
+        .titlebar { height: 39px; display: flex; align-items: center; gap: 9px; padding: 0 11px; background: linear-gradient(90deg, #ff6a0025, #17191f 48%, #0b0c10); border-bottom: 1px solid #ff6a0080; cursor: grab; color: var(--orange2); font: 700 11px Orbitron; }
+        .titlebar .spacer { flex: 1; }
+        .winbtn { width: 24px; height: 23px; background: transparent; border: 1px solid #555963; color: #c7cbd2; cursor: pointer; }
+        .winbtn:hover { background: var(--orange); color: #111; }
+        .body { padding: 14px; overflow: auto; flex: 1; line-height: 1.6; }
+        .body h3 { color: var(--orange); font: 700 13px Orbitron; margin-top: 0; }
+        .section { border: 1px solid #393d46; background: linear-gradient(135deg, #12141a, #090a0e); padding: 12px; margin: 8px 0; }
+        .action { border: 1px solid var(--orange); background: #ff6a0010; color: var(--orange2); padding: 7px 10px; cursor: pointer; transition: 0.2s; }
+        .action:hover { background: var(--orange); color: #111; }
+        .pill { display: inline-block; border: 1px solid #424650; padding: 2px 7px; color: #bfc4ce; font-size: 10px; margin: 2px; }
+        .pill.red { border-color: var(--red); color: var(--red); }
+        .pill.blue { border-color: var(--blue); color: var(--blue); }
+        .pill.green { border-color: var(--green); color: var(--green); }
+
+        /* TERMINAL */
+        #termout { white-space: pre-wrap; color: #ffb36c; }
+        .termrow { display: flex; gap: 8px; margin-top: 8px; }
+        .prompt { color: var(--orange); }
+        #termin { flex: 1; background: transparent; border: 0; border-bottom: 1px solid #3b3e46; color: #ffe0bf; outline: none; font: inherit; }
+
+        /* TASKBAR */
+        #taskbar { position: fixed; z-index: 200; bottom: 0; left: 0; right: 0; height: 46px; background: linear-gradient(90deg, #090a0df7, #17191ef7, #090a0df7); border-top: 1px solid #ff6a0088; display: flex; align-items: center; gap: 8px; padding: 0 12px; }
+        #start { border: 0; background: var(--orange); color: #08090c; font: 900 11px Orbitron; padding: 9px 18px; cursor: pointer; clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); }
+        .taskapp { border: 1px solid #454952; color: #c3c7cf; background: #111319; padding: 6px 10px; font-size: 10px; cursor: pointer; }
+        .taskapp:hover { border-color: var(--orange); color: var(--orange); }
+        #taskclock { margin-left: auto; color: #c3c7cf; font-size: 12px; }
+
+        /* MENU */
+        #menu { display: none; position: fixed; z-index: 300; bottom: 54px; left: 10px; width: 265px; padding: 14px; background: linear-gradient(145deg, #17191f, #08090c); border: 1px solid #8d949e; }
+        #menu.open { display: block; }
+        .menuitem { padding: 10px; cursor: pointer; border-left: 2px solid transparent; transition: 0.2s; }
+        .menuitem:hover { background: #ff6a0012; border-left-color: var(--orange); color: var(--orange); }
+
+        /* CYBER LIBRARY GRID */
+        .cyber-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }
+        .cyber-card { background: #0a0b0f; border: 1px solid #30333b; padding: 15px; border-radius: 4px; }
+        .cyber-card h4 { color: var(--orange); margin: 0 0 10px 0; font-family: Orbitron; font-size: 12px; }
+        .cyber-card code { display: block; background: #000; color: var(--green); padding: 5px; font-size: 11px; margin: 5px 0; border-left: 2px solid var(--green); }
+
+        @media(max-width:650px){
+            .shortcuts { left: 18px; grid-template-columns: repeat(2, 75px); }
+            .win { left: 4% !important; top: 8% !important; width: 92% !important; height: 80% !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="boot">
+    <div class="logo">Zy<span>OS</span></div>
+    <div class="boot-sub">// CYBER INTELLIGENCE INTERFACE · BY ZYBYTE_RETR0 //</div>
+    <div class="boot-bar"></div>
+    <div id="bootlog"></div>
+</div>
+
+<div id="desktop">
+    <div class="watermark">ZyOS</div>
+    <div class="topbar">
+        <strong>ZYOS // INTEL</strong>
+        <span class="green">● SECURE NODE</span>
+        <span class="author-seal"><i class="seal-dot"></i> ZYBYTE_RETR0</span>
+        <span class="right" id="topdate">--</span>
+    </div>
+
+    <div class="shortcuts">
+        <div class="shortcut" onclick="openWin('terminal')"><div class="ico">&gt;_</div><small>TERMINAL</small></div>
+        <div class="shortcut" onclick="openWin('tools')"><div class="ico">⌘</div><small>TOOLKIT</small></div>
+        <div class="shortcut" onclick="openWin('library')"><div class="ico">◈</div><small>LIBRARY</small></div>
+        <div class="shortcut" onclick="openWin('monitor')"><div class="ico">▥</div><small>SYSTEM</small></div>
+        <div class="shortcut" onclick="openWin('notes')"><div class="ico">✎</div><small>NOTAS</small></div>
+        <div class="shortcut" onclick="openWin('about')"><div class="ico">Z</div><small>SOBRE</small></div>
+    </div>
+
+    <!-- TERMINAL -->
+    <div class="win open" id="win-terminal" style="left:20%;top:15%;width:600px;height:380px">
+        <div class="titlebar" data-drag>ZY-TERMINAL <span class="pill">ROOT@SESSÃO</span><div class="spacer"></div><button class="winbtn" onclick="minimizeWin('terminal')">−</button><button class="winbtn" onclick="maximizeWin('terminal')">□</button><button class="winbtn" onclick="closeWin('terminal')">×</button></div>
+        <div class="body" style="background:#07080b;display:flex;flex-direction:column" id="term-body">
+            <div id="termout">ZyOS Intelligence Terminal v3.0
+Acesso autorizado. Digite 'help' para ver a base de comandos de cybersecurity.
+</div>
+            <div class="termrow"><span class="prompt">root@zyos:~$</span><input id="termin" autocomplete="off" spellcheck="false"></div>
+        </div>
+    </div>
+
+    <!-- SECURITY TOOLKIT -->
+    <div class="win" id="win-tools" style="left:25%;top:10%;width:700px;height:500px">
+        <div class="titlebar" data-drag>SECURITY TOOLKIT <div class="spacer"></div><button class="winbtn" onclick="minimizeWin('tools')">−</button><button class="winbtn" onclick="maximizeWin('tools')">□</button><button class="winbtn" onclick="closeWin('tools')">×</button></div>
+        <div class="body">
+            <h3>CATÁLOGO DE OPERAÇÕES</h3>
+            <div class="cyber-grid">
+                <div class="cyber-card">
+                    <h4>RF / RFID / NFC</h4>
+                    <p>Manipulação de radiofrequência e clonagem de tags.</p>
+                    <code>Proxmark3 / Flipper Zero / NFCTools</code>
+                    <span class="pill">HARDWARE</span>
+                </div>
+                <div class="cyber-card">
+                    <h4>FAULT INJECTION</h4>
+                    <p>Indução de erros via glitching de voltagem ou clock.</p>
+                    <code>ChipWhisperer / Voltage Glitching</code>
+                    <span class="pill red">ADVANCED</span>
+                </div>
+                <div class="cyber-card">
+                    <h4>PHISHING / SOCIAL ENG.</h4>
+                    <p>Engenharia social e coleta de credenciais.</p>
+                    <code>Gophish / Evilginx2 / Zphisher</code>
+                    <span class="pill red">BLACK HAT</span>
+                </div>
+                <div class="cyber-card">
+                    <h4>PASSWORD CRACKING</h4>
+                    <p>Quebra de hashes e ataques de dicionário.</p>
+                    <code>Hashcat / John the Ripper / Hydra</code>
+                    <span class="pill">CRYPTO</span>
+                </div>
+                <div class="cyber-card">
+                    <h4>PENTEST GENERAL</h4>
+                    <p>Enumeração, exploração e pós-exploração.</p>
+                    <code>Metasploit / Nmap / Burp Suite</code>
+                    <span class="pill green">WHITE HAT</span>
+                </div>
+                <div class="cyber-card">
+                    <h4>BLUE TEAM / DEFENSE</h4>
+                    <p>Monitoramento, SIEM e resposta a incidentes.</p>
+                    <code>Splunk / Wireshark / Snort</code>
+                    <span class="pill blue">DEFENSE</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CYBER LIBRARY -->
+    <div class="win" id="win-library" style="left:20%;top:10%;width:800px;height:550px">
+        <div class="titlebar" data-drag>CYBER-LIBRARY // DOSSIÊ <div class="spacer"></div><button class="winbtn" onclick="minimizeWin('library')">−</button><button class="winbtn" onclick="maximizeWin('library')">□</button><button class="winbtn" onclick="closeWin('library')">×</button></div>
+        <div class="body">
+            <h3>ENCICLOPÉDIA DE SEGURANÇA</h3>
+            <div class="cyber-grid">
+                <div class="section">
+                    <b class="orange">WHITE HAT (Éticos)</b>
+                    <p>Atuam legalmente para encontrar vulnerabilidades e reportá-las (Bug Bounty).</p>
+                    <span class="pill green">LEGAL</span>
+                </div>
+                <div class="section">
+                    <b class="orange">BLACK HAT (Criminosos)</b>
+                    <p>Acessam sistemas sem autorização para ganho pessoal ou dano.</p>
+                    <span class="pill red">ILEGAL</span>
+                </div>
+                <div class="section">
+                    <b class="orange">GRAY HAT (Híbridos)</b>
+                    <p>Podem invadir sem permissão, mas não com intenção maliciosa, reportando depois.</p>
+                    <span class="pill">AMBÍGUO</span>
+                </div>
+                <div class="section">
+                    <b class="orange">RED TEAM (Ofensivos)</b>
+                    <p>Simulam adversários reais para testar a resiliência de uma organização.</p>
+                    <span class="pill red">ATTACK</span>
+                </div>
+                <div class="section">
+                    <b class="orange">BLUE TEAM (Defensivos)</b>
+                    <p>Focam na detecção, proteção e resposta a ataques em tempo real.</p>
+                    <span class="pill blue">DEFEND</span>
+                </div>
+                <div class="section">
+                    <b class="orange">FAULT CAT / INJECTION</b>
+                    <p>Técnicas de forçar o hardware a pular instruções de verificação de senha (Glitching).</p>
+                    <span class="pill red">HARDWARE</span>
+                </div>
+            </div>
+            <div class="section">
+                <b class="orange">REPOSITÓRIOS ESSENCIAIS</b>
+                <p>• <b>Exploit-DB:</b> Arquivo de exploits públicos.</p>
+                <p>• <b>GitHub (BlackArch):</b> Ferramentas de pentest.</p>
+                <p>• <b>OWASP:</b> Padrões de segurança para aplicações Web.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTHER WINDOWS (Simplified for space) -->
+    <div class="win" id="win-monitor" style="left:30%;top:20%;width:400px;height:300px">
+        <div class="titlebar" data-drag>SYSTEM MONITOR<div class="spacer"></div><button class="winbtn" onclick="closeWin('monitor')">×</button></div>
+        <div class="body"><h3>SESSÃO ATIVA</h3><div class="section">CPU: 14%<br>RAM: 2.1GB<br>STATUS: <span class="green">ENCRYPTED</span></div></div>
+    </div>
+    <div class="win" id="win-notes" style="left:25%;top:25%;width:500px;height:350px">
+        <div class="titlebar" data-drag>ZY-NOTES<div class="spacer"></div><button class="winbtn" onclick="closeWin('notes')">×</button></div>
+        <div class="body"><textarea id="notes" style="width:100%; height:200px; background:#000; color:#fff; border:1px solid #333; padding:10px; outline:none; font:inherit; resize:none;" placeholder="// Anote seus payloads aqui..."></textarea><br><button class="action" onclick="saveNotes()">SALVAR</button></div>
+    </div>
+    <div class="win" id="win-about" style="left:30%;top:15%;width:400px;height:300px">
+        <div class="titlebar" data-drag>ABOUT ZYOS<div class="spacer"></div><button class="winbtn" onclick="closeWin('about')">×</button></div>
+        <div class="body"><h3>ZyOS Intelligence Edition</h3><p>Interface focada em documentação de Cybersecurity. Inspirada no BlackArch Linux.</p><p class="orange">By Zybyte_retr0</p></div>
+    </div>
+
+    <div id="menu">
+        <h3 style="color:var(--orange); font-family:Orbitron">ZYOS MENU</h3>
+        <div class="menuitem" onclick="openWin('terminal');toggleMenu()">›_ Terminal</div>
+        <div class="menuitem" onclick="openWin('tools');toggleMenu()">⌘ Security Toolkit</div>
+        <div class="menuitem" onclick="openWin('library');toggleMenu()">◈ Cyber Library</div>
+        <div class="menuitem" onclick="openWin('monitor');toggleMenu()">▥ System Monitor</div>
+        <div class="menuitem" onclick="openWin('notes');toggleMenu()">✎ Notas</div>
+        <div class="menuitem" onclick="location.reload()">⟲ Reiniciar</div>
+    </div>
+
+    <div id="taskbar">
+        <button id="start" onclick="toggleMenu()">ZyOS</button>
+        <button class="taskapp" onclick="openWin('terminal')">TERMINAL</button>
+        <button class="taskapp" onclick="openWin('tools')">TOOLKIT</button>
+        <button class="taskapp" onclick="openWin('library')">LIBRARY</button>
+        <div id="taskclock" class="right"><span id="tbtime">--:--</span></div>
+    </div>
+</div>
+
+<script>
+    // BOOT
+    const bootLines = ['> initializing zy_core.intel ...', '> loading cyber_library modules ...', '> mounting encrypted workspace ...', '> bypassing security filters ...', '> ZyOS Intelligence Ready.'];
+    const blog = document.getElementById('bootlog');
+    let bi = 0;
+    const bootTimer = setInterval(() => {
+        if (bi < bootLines.length) { blog.textContent += bootLines[bi++] + '\n'; } else { clearInterval(bootTimer); }
+    }, 350);
+    setTimeout(() => document.getElementById('boot').classList.add('off'), 2500);
+
+    // WINDOWS
+    let zTop = 100;
+    function openWin(id) {
+        const w = document.getElementById('win-' + id);
+        if (!w) return;
+        w.classList.add('open');
+        w.style.zIndex = ++zTop;
+        document.getElementById('menu').classList.remove('open');
+    }
+    function closeWin(id) { document.getElementById('win-' + id).classList.remove('open'); }
+    function minimizeWin(id) { document.getElementById('win-' + id).classList.add('minimized'); }
+    function maximizeWin(id) {
+        const w = document.getElementById('win-' + id);
+        w.classList.toggle('maximized');
+    }
+    function toggleMenu() { document.getElementById('menu').classList.toggle('open'); }
+
+    // DRAG
+    let dragState = null;
+    document.querySelectorAll('[data-drag]').forEach(bar => {
+        const win = bar.parentElement;
+        bar.addEventListener('pointerdown', e => {
+            const r = win.getBoundingClientRect();
+            dragState = { win, dx: e.clientX - r.left, dy: e.clientY - r.top };
+            win.style.zIndex = ++zTop;
+            bar.setPointerCapture(e.pointerId);
+        });
+        bar.addEventListener('pointermove', e => {
+            if (!dragState) return;
+            win.style.left = (e.clientX - dragState.dx) + 'px';
+            win.style.top = (e.clientY - dragState.dy) + 'px';
+        });
+        bar.addEventListener('pointerup', () => dragState = null);
+    });
+
+    // TERMINAL INTELLIGENCE
+    const termout = document.getElementById('termout');
+    const termin = document.getElementById('termin');
+    function printLine(s = '') {
+        termout.textContent += s + '\n';
+        document.getElementById('term-body').scrollTop = termout.scrollHeight;
+    }
+    function runCommand(raw) {
+        const c = raw.trim(), lc = c.toLowerCase();
+        if (!c) return;
+        printLine('root@zyos:~$ ' + c);
+        
+        if (lc === 'help') {
+            printLine('--- COMANDOS DE INTELIGÊNCIA ---');
+            printLine('ls -l          : Lista diretórios de manuais');
+            printLine('nmap -sV       : Exemplo de scan de versão');
+            printLine('hashcat -m 0    : Exemplo de crack de MD5');
+            printLine('open library   : Abre o Dossiê de Cyber');
+            printLine('open tools     : Abre o Toolkit de Hardware');
+            printLine('clear          : Limpa a tela');
+        } else if (lc === 'clear') {
+            termout.textContent = '';
+        } else if (lc === 'ls -l') {
+            printLine('drwxr-xr-x  /root/manuals/pentest');
+            printLine('drwxr-xr-x  /root/manuals/rfid_nfc');
+            printLine('drwxr-xr-x  /root/manuals/social_eng');
+            printLine('-rw-r--r--  /root/payloads.txt');
+        } else if (lc.includes('nmap')) {
+            printLine('Sintaxe: nmap [Scan Type] [Options] {target}');
+            printLine('Ex: nmap -sS -sV -O 192.168.1.1');
+        } else if (lc.includes('hashcat')) {
+            printLine('Sintaxe: hashcat -m [Hash Type] -a [Attack Mode] [Hash File] [Wordlist]');
+            printLine('Ex: hashcat -m 0 -a 0 hashes.txt rockyou.txt');
+        } else if (lc.startsWith('open ')) {
+            const app = lc.replace('open ', '').trim();
+            openWin(app);
+            printLine('Acessando módulo ' + app + '...');
+        } else {
+            printLine('Erro: Comando não reconhecido ou sem privilégios.');
+        }
+        printLine('');
+    }
+    termin.addEventListener('keydown', e => { if (e.key === 'Enter') { runCommand(termin.value); termin.value = ''; } });
+
+    // CLOCK
+    function tick() {
+        const d = new Date();
+        document.getElementById('tbtime').textContent = d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+        document.getElementById('topdate').textContent = d.toLocaleDateString('pt-BR').toUpperCase();
+    }
+    setInterval(tick, 1000); tick();
+
+    function saveNotes() { alert('Notas salvas no buffer local.'); }
+</script>
+</body>
+</html>
